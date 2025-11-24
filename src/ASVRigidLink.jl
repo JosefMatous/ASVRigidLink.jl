@@ -14,6 +14,10 @@ include("model.jl")
 include("asv_control.jl")
 include("straightline/guidance.jl")
 include("straightline/simulation.jl")
+include("curved/path.jl")
+include("curved/control_lin.jl")
+include("curved/guidance.jl")
+include("curved/simulation.jl")
 include("visualization.jl")
 
 end # module ASVRigidLink

@@ -47,6 +47,12 @@ function _surge_reference(x::Rn, U::Real, mode::SpeedOverGround)
     return u_ref
 end
 
+"""
+Line-of-sight (LOS) guidance law for straight-line paths.
+
+# Fields
+$(FIELDS)
+"""
 struct LOSGuidance
     "Reference speed"
     U::Real
@@ -68,6 +74,20 @@ struct LOSGuidance
     end
 end
 
+"""
+Guidance law for straight-line LOS guidance.
+
+    ref, y_add_dot = guidance_law(x, y_add, L, path, guidance)
+
+Returns the low-level reference `ref` and the derivative of the LOS integrator `y_add_dot`.
+
+# Arguments
+- `x::Rn`: Current system state (cf., `asv_ode`).
+- `y_add::Real`: Current LOS integrator state.
+- `L::Real`: Cable length.
+- `path::StraightLineParameters`: Straight-line path parameters.
+- `guidance::LOSGuidance`: LOS guidance parameters.
+"""
 function guidance_law(x::Rn, y_add::Real, L::Real, path::StraightLineParameters, guidance::LOSGuidance)
     # Unpack state
     p_asv = x[1:2]

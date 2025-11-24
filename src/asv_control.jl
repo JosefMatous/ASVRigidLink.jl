@@ -1,8 +1,20 @@
 export LowLevelController, LowLevelPID, LowLevelST, LowLevelReference, control_law
 export get_num_states
 
+"Abstract type for low-level ASV controllers."
 abstract type LowLevelController end
 
+"Returns the number of controller states."
+get_num_states(controller::LowLevelController) = error("get_num_states not implemented for type $(typeof(controller))")
+
+"""
+Surge and heading PID controller for an ASV.
+
+Uses a PI controller for surge and a PID controller for heading.
+
+# Fields
+$(FIELDS)
+"""
 struct LowLevelPID <: LowLevelController
     "Surge proportional gain"
     Kp_u::Real
@@ -18,6 +30,32 @@ end
 
 get_num_states(controller::LowLevelPID) = 2
 
+"""
+Surge and heading super-twisting controller for an ASV.
+
+Uses a first-order ST-SMC for surge and a second-order ST-SMC for heading.
+For surge, the control input is given by:
+```math
+τ_u = K_{p,u} ⌊e_u⌉^{1/2} + ∫ K_{i,u} sgn(e_u) dt
+```
+where `e_u` is the surge velocity error.
+
+For heading, the control input is given by:
+```math
+τ_r = K_{d,r} ⌊ϕ_r⌉^{1/2} + ∫ K_{i,r} sgn(ϕ_r) dt
+```
+where
+```math
+ϕ_r = k_1 ⌊e_ψ⌉^{2/3} + e_r
+```
+is the sliding variable, `e_ψ` is the heading error, `e_r` is the yaw rate error, and
+```math
+k_1 = K_{p,r} / K_{d,r}
+```
+
+# Fields
+$(FIELDS)
+"""
 struct LowLevelST <: LowLevelController
     "Surge proportional gain"
     Kp_u::Real
@@ -35,6 +73,11 @@ end
 
 get_num_states(controller::LowLevelST) = 2
 
+"""Low-level reference for ASV control.
+
+# Fields
+$(FIELDS)
+"""
 struct LowLevelReference
     "Surge reference speed"
     u_ref::Real
@@ -44,6 +87,19 @@ struct LowLevelReference
     r_ref::Real
 end
 
+"""
+Control law for low-level ASV controllers.
+
+    τ, x_i_dot = control_law(x, x_i, ref, controller)
+
+Returns the control input `τ` and the derivative of the controller state `x_i_dot`.
+
+# Arguments
+- `x::Rn`: Current system state.
+- `x_i::Rn`: Current controller state.
+- `ref::LowLevelReference`: Current reference.
+- `controller::LowLevelController`: Low-level controller.
+"""
 function control_law(x::Rn, x_i::Rn, ref::LowLevelReference, controller::LowLevelPID)
     # Unpack state
     x_dot = x[5]
@@ -73,6 +129,7 @@ function control_law(x::Rn, x_i::Rn, ref::LowLevelReference, controller::LowLeve
     return [τ_u, τ_r], [u_i_dot, r_i_dot]
 end
 
+"Signed power function."
 spow(x::Real, a::Real) = sign(x) * abs(x)^a
 
 function control_law(x::Rn, x_i::Rn, ref::LowLevelReference, controller::LowLevelST)

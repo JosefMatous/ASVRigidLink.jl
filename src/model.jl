@@ -1,5 +1,13 @@
 export ASVTowingModel, asv_ode
 
+"""
+Model of an autonomous surface vehicle (ASV) towing a payload via a rigid massless link.
+
+The origin of the ASV body-fixed frame is located at the towing point.
+
+# Fields
+$(FIELDS)
+"""
 struct ASVTowingModel
     "Vehicle inertia in x-axis"
     m_x::Real
@@ -33,7 +41,7 @@ function asv_lagrangian(X::Rn, model::ASVTowingModel)
     m_y = model.m_y
     I_z = model.I_z
     x_G = model.x_G
-    M_ASV = [m_x 0 0; 0 m_y m_y*x_G; 0 m_y*x_G I_z]
+    M_ASV = [m_x 0 0; 0 m_y m_y*x_G; 0 m_y*x_G I_z+m_y*x_G^2]
     T_ASV = 0.5 * v_ASV' * M_ASV * v_ASV
 
     # Payload velocity
@@ -49,6 +57,25 @@ function asv_lagrangian(X::Rn, model::ASVTowingModel)
     return T    
 end
 
+"""
+ASV rigid-link towing vehicle dynamics.
+
+    dx = asv_ode(x, u, V_c, model)
+
+# Arguments
+- `x::Rn`: Current system state, `x = [x, y, ψ, θ, x_dot, y_dot, ψ_dot, θ_dot]`, where
+    - `(x, y)`: Position of ASV towing point in inertial frame.
+    - `ψ`: ASV yaw angle.
+    - `θ`: Payload angle.
+    - `(x_dot, y_dot)`: Velocity of ASV towing point in inertial frame.
+    - `ψ_dot`: ASV yaw rate.
+    - `θ_dot`: Payload angular rate.
+- `u::Rn`: Control input, `u = [τ_u, τ_r]`, where
+    - `τ_u`: Surge force.
+    - `τ_r`: Yaw moment.
+- `V_c::Rn`: Ocean current velocity in inertial frame.
+- `model::ASVTowingModel`: ASV towing model.
+"""
 function asv_ode(x::Rn, u::Rn, V_c::Rn, model::ASVTowingModel)
     # Unpack state
     ψ = x[3]

@@ -30,6 +30,21 @@ function SystemDimensions(asv_body_length::Real, asv_bow_length::Real, asv_width
     return SystemDimensions(asv_body_length, asv_bow_length, asv_width, sim.model)
 end
 
+"""
+Plot the ASV and payload given the system state.
+
+    plot_system!(plt, x, dimensions; asv_params=(), cable_params=(), payload_params=())
+
+The ASV is represented as a polygon, the cable as a line, and the payload as a scatterplot.
+
+# Arguments
+- `plt::Plots.Plot`: Destination figure.
+- `x::Rn`: System state (cf., `asv_ode`).
+- `dimensions::SystemDimensions`: Dimensions of the system.
+- `asv_params`: Keyword arguments for the ASV polygon (should be a `Tuple` of `Pair{Symbol, Any}`).
+- `cable_params`: Keyword arguments for the cable line (should be a `Tuple` of `Pair{Symbol, Any}`).
+- `payload_params`: Keyword arguments for the payload scatter (should be a `Tuple` of `Pair{Symbol, Any}`).
+"""
 function plot_system!(plt, x::Rn, dimensions::SystemDimensions;
     asv_params=(), cable_params=(), payload_params=())
 

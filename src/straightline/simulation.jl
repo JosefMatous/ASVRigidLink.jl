@@ -1,6 +1,12 @@
 export SimulationState, vectorize
 export SimulationParameters, closed_loop_ode!
 
+"""
+Current state of the straight-line towing simulation.
+
+# Fields
+$(FIELDS)
+"""
 struct SimulationState
     "ASV position"
     p_asv::Rn
@@ -20,10 +26,16 @@ struct SimulationState
     x_i::Rn
 end
 
+"""
+Convert a `SimulationState` to a vector.
+"""
 function vectorize(state::SimulationState)
     return [state.p_asv; state.ψ; state.θ; state.v_asv; state.r; state.θ_dot; state.y_add; state.x_i]
 end
 
+"""
+Create a `SimulationState` from a vector.
+"""
 function SimulationState(x::Rn)
     return SimulationState(
         x[1:2],
@@ -33,11 +45,17 @@ function SimulationState(x::Rn)
         x[7],
         x[8],
         x[9],
-        x[10:11]
+        x[10:end]
     )
 end
 Base.show(io::IO, state::SimulationState) = print(io, "p_asv=$(state.p_asv), ψ=$(state.ψ), θ=$(state.θ), v_asv=$(state.v_asv), r=$(state.r), θ_dot=$(state.θ_dot), y_add=$(state.y_add), x_i=$(state.x_i)")
 
+"""
+Simulation parameters for the straight-line towing simulation.
+
+# Fields
+$(FIELDS)
+"""
 struct SimulationParameters
     "ASV and cable parameters"
     model::ASVTowingModel
@@ -51,6 +69,17 @@ struct SimulationParameters
     V_c::Rn
 end
 
+"""
+Closed-loop ODE for the straight-line towing simulation.
+
+    closed_loop_ode!(dx, x, p, t)
+
+# Arguments
+- `dx::Rn`: Derivative of the state.
+- `x::Rn`: Current system state.
+- `p::SimulationParameters`: Simulation parameters.
+- `t::Real`: Current time.
+"""
 function closed_loop_ode!(dx::Rn, x::Rn, p::SimulationParameters, ::Real)
     # Unpack parameters
     model = p.model
