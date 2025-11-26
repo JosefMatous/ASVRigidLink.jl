@@ -57,6 +57,18 @@ function asv_lagrangian(X::Rn, model::ASVTowingModel)
     return T    
 end
 
+function asv_mass_coriolis(x::Rn, model::ASVTowingModel)
+    L_fcn = _x -> asv_lagrangian(_x, model)
+    res = DiffResults.HessianResult(x)
+    ForwardDiff.hessian!(res, L_fcn, x)
+
+    H = DiffResults.hessian(res)
+    ∇L = DiffResults.jacobian(res)
+    M = H[5:8, 5:8]
+    b = ∇L[1:4] - H[5:8, 1:4] * x[5:8]
+    return M, b
+end
+
 """
 ASV rigid-link towing vehicle dynamics.
 
@@ -92,14 +104,7 @@ function asv_ode(x::Rn, u::Rn, V_c::Rn, model::ASVTowingModel)
     v_T = v_ASV + θ_dot * model.L * [-sin(θ), cos(θ)]
 
     # Mass and Coriolis matrices
-    L_fcn = _x -> asv_lagrangian(_x, model)
-    res = DiffResults.HessianResult(x)
-    ForwardDiff.hessian!(res, L_fcn, x)
-
-    H = DiffResults.hessian(res)
-    ∇L = DiffResults.jacobian(res)
-    M = H[5:8, 5:8]
-    b = ∇L[1:4] - H[5:8, 1:4] * x[5:8]
+    M, b = asv_mass_coriolis(x, model)
 
     # Damping forces
     # ASV hydrodynamic damping

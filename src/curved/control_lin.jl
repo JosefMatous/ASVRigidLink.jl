@@ -97,20 +97,7 @@ function virtual_point_control_law(
     # C is the Jacobian of v w.r.t. generalized velocities
     C = [I(2) zeros(2) ε * L * dΓ_θ]
     # M is the mass matrix of the system
-    m_x = model.m_x
-    m_y = model.m_y
-    I_z = model.I_z
-    x_G = model.x_G
-    M_ASV = [m_x 0 0; 0 m_y m_y*x_G; 0 m_y*x_G I_z+m_y*x_G^2]
-    J_ASV = [Γ_ψ dΓ_ψ zeros(2); 0 0 1]
-    M = zeros(4,4)
-    M[1:3,1:3] = J_ASV * M_ASV * J_ASV'
-    m_T = model.m_T
-    M[1, 1] += m_T
-    M[2, 2] += m_T
-    M[1:2, 4] = m_T * L * dΓ_θ
-    M[4, 1:2] = M[1:2, 4]'
-    M[4,4] = m_T * L^2
+    M, _ = asv_mass_coriolis(x, model)
     # B is the input matrix of the ASV
     B = [Γ_ψ zeros(2); 0 1; 0 0]
 
