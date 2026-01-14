@@ -1,4 +1,4 @@
-export StraightLineParameters
+export StraightLineParameters, StraightLineGuidance
 export SpeedMode, SurgeVelocity, SpeedOverGround
 export LOSGuidance, guidance_law
 
@@ -21,6 +21,8 @@ struct StraightLineParameters
         return new(p0, ψ)
     end
 end
+
+abstract type StraightLineGuidance end
 
 abstract type SpeedMode end
 
@@ -53,7 +55,7 @@ Line-of-sight (LOS) guidance law for straight-line paths.
 # Fields
 $(FIELDS)
 """
-struct LOSGuidance
+struct LOSGuidance <: StraightLineGuidance
     "Reference speed"
     U::Real
     "Look-ahead distance"

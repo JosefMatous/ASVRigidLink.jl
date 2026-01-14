@@ -62,7 +62,7 @@ struct SimulationParameters
     "Path"
     path::StraightLineParameters
     "Guidance law"
-    guidance::LOSGuidance
+    guidance::StraightLineGuidance
     "Low-level controller"
     controller::LowLevelController
     "Ocean current"
